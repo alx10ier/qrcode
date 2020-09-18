@@ -7,6 +7,8 @@ from capacities_table import CAPACITIES
 from codewords_table import CODEWORDS
 import error_correction
 from error_correction import Polynomial, ComplexCoefficent
+from util import exponent_to_int, int_to_exponent
+
 
 class DATA_MODE(Enum):
 	NUMERIC = 0
@@ -168,4 +170,4 @@ class QRCode:
 		result = message_polynomial.XOR(generator_polynomial_int)
 		print("XOR Result:")
 		print(result)
-		result = result.get_exponent_form()
+		print(int_to_exponent(result.terms[0].coefficient))

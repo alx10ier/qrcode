@@ -1,4 +1,4 @@
-from log_antilog_table import INTEGERS
+from util import exponent_to_int, int_to_exponent
 
 def get_generator_polynomial(num):
 	current = Polynomial(ComplexCoefficent(0), ComplexCoefficent(0))
@@ -12,14 +12,6 @@ def get_generator_polynomial(num):
 def get_message_polynomial(coefficients):
 	result = Polynomial(*coefficients)
 	return result
-
-def exponent_to_int(num):
-		if num > 255:
-			num %= 255
-		return INTEGERS[num]
-
-def int_to_exponent(num):
-		return INTEGERS.index(num)
 
 class Polynomial:
 
@@ -126,7 +118,7 @@ class Term:
 		return Term(exponent_to_int(self.coefficient.exponent), self.exponent)
 
 	def get_exponent_form(self):
-		return Term(ComplexCoefficent(self.coefficient), self.exponent)
+		return Term(ComplexCoefficent(int_to_exponent(self.coefficient)), self.exponent)
 
 class ComplexCoefficent:
 	def __init__(self, exponent):
