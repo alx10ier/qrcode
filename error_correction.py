@@ -9,9 +9,22 @@ def get_generator_polynomial(num):
 		current = current.multiply(next)
 	return current
 
-def get_message_polynomial(coefficients):
+def get_message_polynomial(data):
+	coefficients = list(map(lambda x: int(x, 2), data))
 	result = Polynomial(*coefficients)
 	return result
+
+def get_error_correction_codeword(message_polynomial, generator_polynomial):
+	exponent = int_to_exponent(message_polynomial.terms[0].coefficient)
+	generator_polynomial_int = \
+		generator_polynomial.multiply(Term(ComplexCoefficent(exponent), 0)).get_int_form()
+	generator_polynomial = generator_polynomial.multiply(Term(0, -1))
+	message_polynomial = message_polynomial.XOR(generator_polynomial_int)
+
+	if message_polynomial.terms[-1].exponent == 0:
+		return message_polynomial.get_coefficients()
+	else:
+		return get_error_correction_codeword(message_polynomial, generator_polynomial)
 
 class Polynomial:
 
@@ -29,11 +42,20 @@ class Polynomial:
 	def __len__(self):
 		return len(self.terms)
 
+	def get_coefficients(self):
+		return [term.coefficient for term in self.terms]
+
 	def multiply(self, other):
 		new_terms = []
-		for term1 in self.terms:
-			for term2 in other.terms:
-				new_terms.append(term1.multiply(term2))
+
+		if isinstance(other, Polynomial):
+			for term1 in self.terms:
+				for term2 in other.terms:
+					new_terms.append(term1.multiply(term2))
+
+		if isinstance(other, Term):
+			new_terms = [term.multiply(Term(other.coefficient, other.exponent)) for term in self.terms]
+
 
 		new_polynomial = Polynomial(*new_terms)
 		if isinstance(new_terms[0].coefficient, ComplexCoefficent):
@@ -52,10 +74,6 @@ class Polynomial:
 		longer_terms = self.terms if len(self) > len(other) else other.terms
 		for j in range(i, len(longer_terms)):
 			new_terms.append(longer_terms[j])
-		return Polynomial(*new_terms)
-
-	def multiplyByExponent(self, exponent):
-		new_terms = [term.multiply(Term(1, exponent)) for term in self.terms]
 		return Polynomial(*new_terms)
 
 	def mergeComplex(self):

@@ -6,9 +6,8 @@ from enum import Enum
 from capacities_table import CAPACITIES
 from codewords_table import CODEWORDS
 import error_correction
-from error_correction import Polynomial, ComplexCoefficent
+from error_correction import Polynomial, Term, ComplexCoefficent
 from util import exponent_to_int, int_to_exponent
-
 
 class DATA_MODE(Enum):
 	NUMERIC = 0
@@ -37,8 +36,7 @@ class QRCode:
 
 	def generate(self):
 		data = self.encode_data(self.data)
-		# print(' '.join(data))
-		self.generate_error_correction_codewords(data)
+		ecc = self.get_error_correction_codewords(data)
 
 	def encode_data(self, data):
 		error_correction = self.error_correction
@@ -147,27 +145,14 @@ class QRCode:
 			bit_data += '11101100'
 		return bit_data
 
-	def generate_error_correction_codewords(self, data):
+	def get_error_correction_codewords(self, data):
 		ecc_len = CODEWORDS[self.error_correction.value][1][self.version-1]
-		coefficients = list(map(lambda x: int(x, 2), data))
 
 		generator_polynomial = error_correction.get_generator_polynomial(ecc_len)
-		message_polynomial = error_correction.get_message_polynomial(coefficients)
+		message_polynomial = error_correction.get_message_polynomial(data)
 
-		generator_polynomial = generator_polynomial.multiplyByExponent(len(data)-1)
-		message_polynomial = message_polynomial.multiplyByExponent(ecc_len)
-		print("Message Polynomial:")
-		print(message_polynomial)
+		generator_polynomial = generator_polynomial.multiply(Term(1, len(data)-1))
+		message_polynomial = message_polynomial.multiply(Term(1, ecc_len))
 
-		# Multiply the generator polynomial by the lead term of the message polynomial
-		leading_coefficient = coefficients[0]
-		exponent = error_correction.int_to_exponent(leading_coefficient)
-		generator_polynomial = \
-			generator_polynomial.multiply(Polynomial(ComplexCoefficent(exponent)))
-		generator_polynomial_int = generator_polynomial.get_int_form()
-		print("Generator Polynomial (int form):")
-		print(generator_polynomial_int)
-		result = message_polynomial.XOR(generator_polynomial_int)
-		print("XOR Result:")
-		print(result)
-		print(int_to_exponent(result.terms[0].coefficient))
+		result = error_correction.get_error_correction_codeword(message_polynomial, generator_polynomial)
+		return result
