@@ -2,9 +2,14 @@
 
 from pprint import pprint
 import qrcode 
-import error_correction
 
-qr = qrcode.QRCode('HELLO WORLD')
+message_simple = 'HELLO WORLD'
+message = 'This is the most important things that I have ever seen.'
+message_cause_problem = 'This is the most important things that I have ever seen there days.'
+
+qr = qrcode.QRCode(message_simple, error_correction=qrcode.ERROR_CORRECTION.M)
+# qr = qrcode.QRCode(message, error_correction=qrcode.ERROR_CORRECTION.Q)
+# qr = qrcode.QRCode(message_cause_problem, error_correction=qrcode.ERROR_CORRECTION.Q)
 
 qr.generate()
 

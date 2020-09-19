@@ -1,4 +1,21 @@
 from util import exponent_to_int, int_to_exponent
+from codewords_table import CODEWORDS
+
+def get_error_correction_codewords(dc, ec, version):
+	blocks = []
+
+	for dc_block in dc:
+		ecc_len = CODEWORDS[ec.value][1][version-1]
+
+		generator_polynomial = get_generator_polynomial(ecc_len)
+		message_polynomial = get_message_polynomial(dc_block)
+
+		generator_polynomial = generator_polynomial.multiply(Term(1, len(dc_block)-1))
+		message_polynomial = message_polynomial.multiply(Term(1, ecc_len))
+
+		blocks.append(divide_polynomials(message_polynomial, generator_polynomial))
+
+	return blocks
 
 def get_generator_polynomial(num):
 	current = Polynomial(ComplexCoefficent(0), ComplexCoefficent(0))
@@ -9,12 +26,16 @@ def get_generator_polynomial(num):
 		current = current.multiply(next)
 	return current
 
-def get_message_polynomial(data):
-	coefficients = list(map(lambda x: int(x, 2), data))
-	result = Polynomial(*coefficients)
+def get_message_polynomial(dc):
+	result = Polynomial(*dc)
 	return result
 
-def get_error_correction_codeword(message_polynomial, generator_polynomial):
+def divide_polynomials(message_polynomial, generator_polynomial):
+	# todo: not sure if this part is alright
+	if message_polynomial.terms[0].coefficient == 0:
+		message_polynomial.terms.pop(0)
+		generator_polynomial = generator_polynomial.multiply(Term(0, -1))
+
 	exponent = int_to_exponent(message_polynomial.terms[0].coefficient)
 	generator_polynomial_int = \
 		generator_polynomial.multiply(Term(ComplexCoefficent(exponent), 0)).get_int_form()
@@ -24,7 +45,7 @@ def get_error_correction_codeword(message_polynomial, generator_polynomial):
 	if message_polynomial.terms[-1].exponent == 0:
 		return message_polynomial.get_coefficients()
 	else:
-		return get_error_correction_codeword(message_polynomial, generator_polynomial)
+		return divide_polynomials(message_polynomial, generator_polynomial)
 
 class Polynomial:
 
