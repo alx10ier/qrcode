@@ -19,3 +19,4 @@ for tr in trs:
 output = open('log_antilog_table.py', 'w')
 output.write('INTEGERS = ')
 output.write(str(integers))
+output.close()

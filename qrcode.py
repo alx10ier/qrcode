@@ -2,8 +2,10 @@
 # todo: @feature support frame qr
 # todo: @dev put steps into seperate functions
 
-import error_correction
 import data
+import error_correction
+import module
+
 from data import ERROR_CORRECTION
 
 class QRCode:
@@ -22,3 +24,5 @@ class QRCode:
 		data_codewords = data.get_data_codewords(self.data, self.error_correction, self.mode, self.version)
 		error_correction_codewords = error_correction.get_error_correction_codewords(data_codewords, self.error_correction, self.version)
 		final_message = data.get_final_message(data_codewords, error_correction_codewords, self.error_correction, self.version)
+		print(final_message)
+		# module_matrix = module.get_module_matrix(self.version)
