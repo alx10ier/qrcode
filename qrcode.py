@@ -25,4 +25,4 @@ class QRCode:
 		error_correction_codewords = error_correction.get_error_correction_codewords(data_codewords, self.error_correction, self.version)
 		final_message = data.get_final_message(data_codewords, error_correction_codewords, self.error_correction, self.version)
 		print(final_message)
-		# module_matrix = module.get_module_matrix(self.version)
+		self.module_matrix = module.get_module_matrix(final_message, self.version)

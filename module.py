@@ -1,7 +1,6 @@
-from tkinter import Tk, Frame, Canvas
 from align_patterns_table import ALIGN_PATTERN_LOCATIONS
 
-def get_module_matrix(version):
+def get_module_matrix(data, version):
 	matrix = Matrix((version-1)*4+21, (version-1)*4+21)
 
 	# add finder patterns
@@ -41,15 +40,52 @@ def get_module_matrix(version):
 	matrix.fill_col(8, range(matrix.height-8, matrix.width), color='r', cover=False)
 
 	# reserve version information area
-	for i in range(0, 3):
-		matrix.fill_row(matrix.height-9-i, range(0, 6), color='r')
-	for i in range(0, 3):
-		matrix.fill_col(matrix.width-9-i, range(0, 6), color='r')
+	if version >= 7:
+		for i in range(0, 3):
+			matrix.fill_row(matrix.height-9-i, range(0, 6), color='r')
+		for i in range(0, 3):
+			matrix.fill_col(matrix.width-9-i, range(0, 6), color='r')
 
 	# place data bits
+	place_data_bits(matrix, data)
 
 	return matrix.modules
 
+def place_data_bits(matrix, data):
+	up = True
+	left = True
+	up_stop = True
+	current_position = (matrix.height-1, matrix.width-1)
+	i = 0
+	while i < len(data):
+		color = 'b' if data[i] == '1' else 'w'
+
+		if matrix.get_module(*current_position) is None:
+			matrix.fill_module(*current_position, color)
+		else:
+			i -= 1
+
+		# get next position
+		col_shift = 0
+		if not up_stop:
+			new_row = current_position[0]-1 if up else current_position[0]+1
+			if new_row not in range(0, matrix.height):
+				new_row = current_position[0]
+				up = not up
+				col_shift -= 2
+		else:
+			new_row = current_position[0]
+		
+		new_col = current_position[1]-1 if left else current_position[1]+1
+		new_col += col_shift
+		if col_shift and new_col == 6: new_col -= 1
+
+
+		left = not left
+		up_stop = not up_stop
+
+		current_position = (new_row, new_col)
+		i += 1
 
 def generate_finder_pattern():
 	matrix = Matrix(7, 7)
@@ -71,7 +107,7 @@ def generate_align_pattern():
 
 def get_align_pattern_positions(version):
 	if version < 2:
-		return
+		return []
 	positions = []
 	anchors = ALIGN_PATTERN_LOCATIONS[version-2]
 	for anchor_1 in anchors:
@@ -102,6 +138,8 @@ class Matrix:
 			for j in range(0, len(matrix[0])):
 				self.modules[start_row+i][start_col+j] = matrix[i][j]
 
+	def get_module(self, row, col):
+		return self.modules[row][col]
 
 	def fill_module(self, row, col, color='b', cover=True):
 		if color == 'w':
@@ -137,41 +175,3 @@ class Matrix:
 		for i in range(0, len(self.modules)):
 			for j in range(0, len(self.modules[0])):
 				self.fill_module(i, j, color, cover)
-
-class Example(Frame):
-	def __init__(self):
-		Frame.__init__(self)
-		self.pack(fill='both', expand=1)
-
-		self.canvas = Canvas(self, highlightthickness=0)
-		self.canvas["background"] = '#666666'
-		self.module_size = 10
-
-	def draw(self, matrix):
-		size = self.module_size
-		for y, row in enumerate(matrix):
-			for x, module in enumerate(row):
-				if module == 1:
-					self.canvas.create_rectangle(x*size, y*size, x*size+10, y*size+10, fill="black", outline="#333")
-				elif module == 0:
-					self.canvas.create_rectangle(x*size, y*size, x*size+10, y*size+10, fill="white", outline="#333")
-				elif module == 2:
-					self.canvas.create_rectangle(x*size, y*size, x*size+10, y*size+10, fill="blue", outline="#333")
-
-				else:
-					self.canvas.create_rectangle(x*size, y*size, x*size+10, y*size+10, outline="#333")
-
-
-		self.canvas.pack(fill='both', expand=1)
-
-	def set_module_size(size):
-		self.module_size = size
-
-def main():
-	tk = Tk()
-	ex = Example()
-	ex.draw(get_module_matrix(8))
-	tk.mainloop()
-
-if __name__ == '__main__':
-	main()
