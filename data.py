@@ -76,6 +76,7 @@ def get_data_codewords(data, ec, mode, version):
 	bit_data = mode_indicator + count_indicator + bit_data
 	bit_data = add_pads(bit_data, version, ec)
 	bit_data = [bit_data[i:i+8] for i in range(0, len(bit_data), 8)]
+	
 	data_codewords = list(map(lambda x: int(x, 2), bit_data))
 
 	# group data_codewords

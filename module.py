@@ -1,4 +1,5 @@
 from align_patterns_table import ALIGN_PATTERN_LOCATIONS
+from math import floor
 
 def get_module_matrix(data, version):
 	matrix = Matrix((version-1)*4+21, (version-1)*4+21)
@@ -46,10 +47,84 @@ def get_module_matrix(data, version):
 		for i in range(0, 3):
 			matrix.fill_col(matrix.width-9-i, range(0, 6), color='r')
 
+	# get reference matrix
+	reference_matrix = []
+	for i in range(0, matrix.height):
+			reference_matrix.append([])
+			for j in range(0, matrix.width):
+				reference_matrix[i].append(None)
+
+	for i in range(0, len(matrix.modules)):
+		for j in range(0, len(matrix.modules[0])):
+			reference_matrix[i][j] = 1 if matrix.get_module(i, j) is None else 0
+
 	# place data bits
 	place_data_bits(matrix, data)
 
+	#evaluate patterns
+	# for i in range(0, 8):
+	# 	masked_modules = mask(matrix.modules, reference_matrix, i)
+	# 	score = get_score(masked_modules)
+
+	matrix.modules = mask(matrix.modules, reference_matrix, 0)
+
+	add_information(matrix)
+
 	return matrix.modules
+
+def get_score(modules):
+	# penalty = 0
+	# # condition 1
+	# for row in modules:
+	pass
+
+
+def mask(matrix, reference, type):
+	pattern_0 = lambda x, y: not (x+y)%2
+	pattern_1 = lambda x, y: not x%2
+	pattern_2 = lambda x, y: not y%3
+	pattern_3 = lambda x, y: not (x+y)%3
+	pattern_4 = lambda x, y: not (floor(x/2)+floor(y/3))%2
+	pattern_5 = lambda x, y: not ((x*y)%2)+((x*y)%3)
+	pattern_6 = lambda x, y: not (((x*y)%2)+((x*y)%3))%2
+	pattern_7 = lambda x, y: not (((x+y)%2)+((x*y)%3))%2
+
+	if type == 0: pattern = pattern_0
+	elif type == 1: pattern = pattern_1
+	elif type == 2: pattern = pattern_2
+	elif type == 3: pattern = pattern_3
+	elif type == 4: pattern = pattern_4
+	elif type == 5: pattern = pattern_5
+	elif type == 6: pattern = pattern_6
+	elif type == 7: pattern = pattern_7 
+
+	matrix_copy = []
+	for row in matrix:
+		matrix_copy.append(row.copy())
+
+	for i in range(0, len(matrix)):
+		for j in range(0, len(matrix[0])):
+			if pattern(i, j) and reference[i][j]:
+				module = matrix[i][j]
+				module = 1 if module == 0 else 0
+				matrix_copy[i][j] = module
+
+	return matrix_copy
+
+def add_information(matrix):
+	information_bits = '011010101011111'
+	information_modules = ['b' if bit == '1' else 'w' for bit in information_bits]
+	for i in range(0, 6):
+		matrix.fill_module(8, i, information_modules[i])
+	for i in range(6, 8):
+		matrix.fill_module(8, i+1, information_modules[i])
+	matrix.fill_module(7, 8, information_modules[8])
+	for i in range(9, 15):
+		matrix.fill_module(14-i, 8, information_modules[i])
+	for i in range(0, 7):
+		matrix.fill_module(matrix.height-1-i, 8, information_modules[i])
+	for i in range(7, 15):
+		matrix.fill_module(8, matrix.width-1-(14-i), information_modules[i])
 
 def place_data_bits(matrix, data):
 	up = True
@@ -58,6 +133,7 @@ def place_data_bits(matrix, data):
 	current_position = (matrix.height-1, matrix.width-1)
 	i = 0
 	while i < len(data):
+		pass
 		color = 'b' if data[i] == '1' else 'w'
 
 		if matrix.get_module(*current_position) is None:
