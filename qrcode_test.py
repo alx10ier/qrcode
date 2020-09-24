@@ -23,7 +23,6 @@ class Example(Frame):
 					self.canvas.create_rectangle(4*size+x*size, 4*size+y*size, 4*size+x*size+10, 4*size+y*size+10, fill="white", outline="")
 				elif module == 2:
 					self.canvas.create_rectangle(4*size+x*size, 4*size+y*size, 4*size+x*size+10, 4*size+y*size+10, fill="blue", outline="")
-
 				else:
 					self.canvas.create_rectangle(4*size+x*size, 4*size+y*size, 4*size+x*size+10, 4*size+y*size+10, outline="#333")
 
@@ -39,17 +38,14 @@ message_cause_problem = 'This is the most important things that I have ever seen
 message_that_is_really_long = 'This message is so long that ensure the version to be larger than 7, and I dont know what words to put inside of it.'
 
 
-qr = qrcode.QRCode(message_simple, error_correction=qrcode.ERROR_CORRECTION.Q)
+qr = qrcode.QRCode(message_simple, error_correction=qrcode.ERROR_CORRECTION.H)
 # qr = qrcode.QRCode(message, error_correction=qrcode.ERROR_CORRECTION.Q)
-# qr = qrcode.QRCode(message_cause_problem, error_correction=qrcode.ERROR_CORRECTION.Q)
-# qr = qrcode.QRCode(message_that_is_really_long, error_correction=qrcode.ERROR_CORRECTION.Q)
+# qr = qrcode.QRCode(message_cause_problem, error_correction=qrcode.ERROR_CORRECTION.M)
+# qr = qrcode.QRCode(message_that_is_really_long, error_correction=qrcode.ERROR_CORRECTION.L)
 
 qr.generate()
 
-# pprint(vars(qr))
-
-
 tk = Tk()
 ex = Example()
-ex.draw(qr.module_matrix)
+ex.draw(qr.modules)
 tk.mainloop()
